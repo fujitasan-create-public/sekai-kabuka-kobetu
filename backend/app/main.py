@@ -1,9 +1,13 @@
 import asyncio
 import logging
 
+from dotenv import load_dotenv
+load_dotenv()  # load backend/.env before any os.environ reads
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.filings import router as filings_router
 from app.api.health import router as health_router
 from app.api.history import router as history_router
 from app.api.indicators import router as indicators_router
@@ -24,6 +28,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(filings_router)
 app.include_router(health_router)
 app.include_router(search_router)
 app.include_router(history_router)

@@ -5,7 +5,7 @@ import Link from "next/link";
 import FullChart from "@/components/FullChart";
 import FundamentalsPanel from "@/components/FundamentalsPanel";
 import { useDarkMode } from "@/hooks/useDarkMode";
-import { api, HistoryResponse, QuoteResponse, IndicatorResponse } from "@/lib/api";
+import { api, HistoryResponse, QuoteResponse, IndicatorResponse, FilingsResponse } from "@/lib/api";
 
 type Params = { symbol: string };
 
@@ -46,11 +46,16 @@ export default function TickerDetail({ params }: { params: Promise<Params> }) {
   const [bbData, setBbData] = useState<IndicatorResponse | null>(null);
   const [macdData, setMacdData] = useState<IndicatorResponse | null>(null);
   const [rsiData, setRsiData] = useState<IndicatorResponse | null>(null);
+  const [filings, setFilings] = useState<FilingsResponse | null>(null);
 
   useEffect(() => {
     const interval = INTERVALS[range] ?? "1d";
     api.history(ticker, interval, range).then(setHistory).catch(() => setHistory(null));
   }, [ticker, range]);
+
+  useEffect(() => {
+    api.filings(ticker).then(setFilings).catch(() => setFilings(null));
+  }, [ticker]);
 
   useEffect(() => {
     setQuoteLoading(true);
@@ -205,6 +210,77 @@ export default function TickerDetail({ params }: { params: Promise<Params> }) {
         <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
           <h2 className="text-sm font-semibold dark:text-white mb-3">ファンダメンタル情報</h2>
           <FundamentalsPanel quote={quote} loading={quoteLoading} />
+        </div>
+
+        {/* 決算資料 */}
+        <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold dark:text-white">決算資料</h2>
+            {filings?.search_url && (
+              <a
+                href={filings.search_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-indigo-500 hover:text-indigo-400"
+              >
+                {filings.source === "edinet" ? "EDINET で検索 →" : "SEC EDGAR で検索 →"}
+              </a>
+            )}
+          </div>
+
+          {filings === null ? (
+            <p className="text-xs text-gray-400">読み込み中...</p>
+          ) : filings.filings.length === 0 ? (
+            <p className="text-xs text-gray-400">
+              {filings.source === "edinet" && !filings.has_key
+                ? "EDINET API キーが未設定です。EDINET で手動検索してください。"
+                : "直近の開示書類が見つかりませんでした。"}
+              {filings.search_url && (
+                <a
+                  href={filings.search_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-2 text-indigo-500 hover:text-indigo-400 underline"
+                >
+                  {filings.source === "edinet" ? "EDINET を開く" : "SEC EDGAR を開く"}
+                </a>
+              )}
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-left text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-gray-800">
+                    <th className="pb-1 pr-4 font-medium">種類</th>
+                    <th className="pb-1 pr-4 font-medium">提出日</th>
+                    <th className="pb-1 font-medium">書類名</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+                  {filings.filings.map((f, i) => (
+                    <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                      <td className="py-1.5 pr-4 font-mono text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
+                        {f.form}
+                      </td>
+                      <td className="py-1.5 pr-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                        {f.date}
+                      </td>
+                      <td className="py-1.5">
+                        <a
+                          href={f.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline"
+                        >
+                          {f.description}
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         <p className="text-xs text-gray-400 dark:text-gray-600">
