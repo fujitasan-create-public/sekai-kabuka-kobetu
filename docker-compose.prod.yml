@@ -1,0 +1,20 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      target: production
+    container_name: template-backend
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      target: production
+    container_name: template-frontend
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://backend:8000
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"

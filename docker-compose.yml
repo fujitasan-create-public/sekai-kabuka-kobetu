@@ -1,0 +1,29 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      target: development
+    container_name: template-backend-dev
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    command: make dev
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      target: development
+    container_name: template-frontend-dev
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+    command: yarn dev
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
