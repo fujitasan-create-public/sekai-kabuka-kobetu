@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Template Next.js",
-  description: "FastAPI + Next.js template frontend",
+  title: "世界の株価 個別",
+  description: "株価ダッシュボード - 準リアルタイム更新",
 };
 
 type RootLayoutProps = {
@@ -12,8 +12,8 @@ type RootLayoutProps = {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="ja">
-      <body>{children}</body>
+    <html lang="ja" suppressHydrationWarning>
+      <body className="min-h-screen transition-colors duration-200">{children}</body>
     </html>
   );
 }

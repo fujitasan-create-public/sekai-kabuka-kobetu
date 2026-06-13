@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
-  title: Template FastAPI
-  version: 0.1.0
+  title: Sekai Kabuka Kobetu API
+  version: 1.0.0
 paths:
   /health:
     get:
@@ -18,98 +18,268 @@ paths:
                 additionalProperties:
                   type: string
                 type: object
-                title: Response Health Health Get
-  /items:
+  /api/search:
     get:
       tags:
-        - items
-      summary: List Items
-      operationId: list_items_items_get
+        - search
+      summary: Search tickers
+      operationId: search_tickers
+      parameters:
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+            default: ""
       responses:
         "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                items:
-                  $ref: "#/components/schemas/ItemRead"
                 type: array
-                title: Response List Items Items Get
-    post:
+                items:
+                  $ref: "#/components/schemas/TickerSummary"
+  /api/history:
+    get:
       tags:
-        - items
-      summary: Create Item
-      operationId: create_item_items_post
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ItemCreate"
+        - history
+      summary: Get OHLCV history
+      operationId: get_history
+      parameters:
+        - name: ticker
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: interval
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "1d"
+        - name: range
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "6mo"
       responses:
-        "201":
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ItemRead"
-        "422":
-          description: Validation Error
+                $ref: "#/components/schemas/HistoryResponse"
+  /api/quote:
+    get:
+      tags:
+        - quote
+      summary: Get fundamental quote info
+      operationId: get_quote
+      parameters:
+        - name: ticker
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HTTPValidationError"
+                $ref: "#/components/schemas/QuoteResponse"
+  /api/indicators:
+    get:
+      tags:
+        - indicators
+      summary: Get technical indicators
+      operationId: get_indicators
+      parameters:
+        - name: ticker
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: type
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [macd, rsi, sma, ema]
+        - name: interval
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "1d"
+        - name: range
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "6mo"
+        - name: period
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 14
+        - name: fast
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 12
+        - name: slow
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 26
+        - name: signal
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 9
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IndicatorResponse"
 components:
   schemas:
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: "#/components/schemas/ValidationError"
-          type: array
-          title: Detail
+    TickerSummary:
       type: object
-      title: HTTPValidationError
-    ItemCreate:
+      required: [ticker, name, market]
       properties:
+        ticker:
+          type: string
         name:
           type: string
-          title: Name
+        market:
+          type: string
+    OHLCVBar:
       type: object
-      required:
-        - name
-      title: ItemCreate
-    ItemRead:
       properties:
-        id:
+        t:
           type: integer
-          title: Id
-        name:
-          type: string
-          title: Name
+          description: Unix timestamp milliseconds
+        o:
+          type: number
+          nullable: true
+        h:
+          type: number
+          nullable: true
+        l:
+          type: number
+          nullable: true
+        c:
+          type: number
+          nullable: true
+        v:
+          type: number
+          nullable: true
+    HistoryResponse:
       type: object
-      required:
-        - id
-        - name
-      title: ItemRead
-    ValidationError:
+      required: [ticker, interval, range, data]
       properties:
-        loc:
-          items:
-            anyOf:
-              - type: string
-              - type: integer
-          type: array
-          title: Location
-        msg:
+        ticker:
           type: string
-          title: Message
+        interval:
+          type: string
+        range:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/OHLCVBar"
+    QuoteResponse:
+      type: object
+      properties:
+        ticker:
+          type: string
+        longName:
+          type: string
+          nullable: true
+        shortName:
+          type: string
+          nullable: true
+        currency:
+          type: string
+          nullable: true
+        exchange:
+          type: string
+          nullable: true
+        trailingPE:
+          type: number
+          nullable: true
+        forwardPE:
+          type: number
+          nullable: true
+        priceToBook:
+          type: number
+          nullable: true
+        marketCap:
+          type: number
+          nullable: true
+        dividendYield:
+          type: number
+          nullable: true
+        trailingEps:
+          type: number
+          nullable: true
+        fiftyTwoWeekHigh:
+          type: number
+          nullable: true
+        fiftyTwoWeekLow:
+          type: number
+          nullable: true
+        volume:
+          type: number
+          nullable: true
+        averageVolume:
+          type: number
+          nullable: true
+        beta:
+          type: number
+          nullable: true
+        sector:
+          type: string
+          nullable: true
+        industry:
+          type: string
+          nullable: true
+    IndicatorDataPoint:
+      type: object
+      properties:
+        t:
+          type: integer
+        v:
+          type: number
+          nullable: true
+        macd:
+          type: number
+          nullable: true
+        signal:
+          type: number
+          nullable: true
+        histogram:
+          type: number
+          nullable: true
+    IndicatorResponse:
+      type: object
+      required: [ticker, type, data]
+      properties:
+        ticker:
+          type: string
         type:
           type: string
-          title: Error Type
-      type: object
-      required:
-        - loc
-        - msg
-        - type
-      title: ValidationError
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/IndicatorDataPoint"
