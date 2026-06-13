@@ -216,16 +216,20 @@ export default function TickerDetail({ params }: { params: Promise<Params> }) {
         <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold dark:text-white">決算資料</h2>
-            {filings?.search_url && (
-              <a
-                href={filings.search_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-indigo-500 hover:text-indigo-400"
-              >
-                {filings.source === "edinet" ? "EDINET で検索 →" : "SEC EDGAR で検索 →"}
-              </a>
-            )}
+            <div className="flex gap-3">
+              {filings?.tdnet_url && (
+                <a href={filings.tdnet_url} target="_blank" rel="noopener noreferrer"
+                  className="text-xs text-emerald-500 hover:text-emerald-400">
+                  TDnet →
+                </a>
+              )}
+              {filings?.search_url && (
+                <a href={filings.search_url} target="_blank" rel="noopener noreferrer"
+                  className="text-xs text-indigo-500 hover:text-indigo-400">
+                  {filings.source === "edinet" ? "EDINET →" : "SEC EDGAR →"}
+                </a>
+              )}
+            </div>
           </div>
 
           {filings === null ? (
@@ -259,8 +263,17 @@ export default function TickerDetail({ params }: { params: Promise<Params> }) {
                 <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
                   {filings.filings.map((f, i) => (
                     <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                      <td className="py-1.5 pr-4 font-mono text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
-                        {f.form}
+                      <td className="py-1.5 pr-4 whitespace-nowrap">
+                        <span className={`font-mono text-xs ${
+                          f.source === "tdnet"
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : "text-indigo-600 dark:text-indigo-400"
+                        }`}>
+                          {f.form}
+                        </span>
+                        {f.source === "tdnet" && (
+                          <span className="ml-1 text-[10px] text-emerald-500 dark:text-emerald-500">TDnet</span>
+                        )}
                       </td>
                       <td className="py-1.5 pr-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">
                         {f.date}
