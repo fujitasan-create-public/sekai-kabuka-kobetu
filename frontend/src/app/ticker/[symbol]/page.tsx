@@ -297,7 +297,7 @@ export default function TickerDetail({ params }: { params: Promise<Params> }) {
         </div>
 
         <p className="text-xs text-gray-400 dark:text-gray-600">
-          ※ 表示データは yfinance 経由の参考値（数十秒〜数分遅延あり）です。投資判断の根拠としないでください。
+          ※ 表示データは参考値です。投資判断の根拠としないでください。
         </p>
       </main>
     </div>
