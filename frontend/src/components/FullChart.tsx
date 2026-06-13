@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { createChart, ColorType } from "lightweight-charts";
+import { createChart, ColorType, TickMarkType } from "lightweight-charts";
 import type { OHLCVBar, IndicatorDataPoint } from "@/lib/api";
 
 type Props = {
@@ -30,7 +30,26 @@ export default function FullChart({ data, chartType, dark, macdData, rsiData, sm
     const chartOpts = {
       layout: { background: { type: ColorType.Solid, color: bg }, textColor },
       grid: { vertLines: { color: gridColor }, horzLines: { color: gridColor } },
-      timeScale: { borderColor },
+      timeScale: {
+        borderColor,
+        timeVisible: true,
+        secondsVisible: false,
+        tickMarkFormatter: (time: number, markType: TickMarkType) => {
+          // time は UTC 秒。JST = UTC+9 に変換して表示
+          const jst = new Date((time + 9 * 3600) * 1000);
+          switch (markType) {
+            case TickMarkType.Time:
+            case TickMarkType.TimeWithSeconds:
+              return `${String(jst.getUTCHours()).padStart(2, "0")}:${String(jst.getUTCMinutes()).padStart(2, "0")}`;
+            case TickMarkType.DayOfMonth:
+              return `${jst.getUTCMonth() + 1}/${jst.getUTCDate()}`;
+            case TickMarkType.Month:
+              return `${jst.getUTCFullYear()}/${jst.getUTCMonth() + 1}`;
+            default:
+              return String(jst.getUTCFullYear());
+          }
+        },
+      },
       rightPriceScale: { borderColor },
       watermark: { visible: false },
     };
@@ -41,7 +60,7 @@ export default function FullChart({ data, chartType, dark, macdData, rsiData, sm
       height: 380,
     });
 
-    const validData = data.filter((d) => d.o !== null && d.h !== null && d.l !== null && d.c !== null);
+    const toTime = (ms: number) => Math.floor(ms / 1000) as unknown as string;
 
     if (chartType === "candle") {
       const series = mainChart.addCandlestickSeries({
@@ -51,19 +70,22 @@ export default function FullChart({ data, chartType, dark, macdData, rsiData, sm
         wickUpColor: "#22c55e",
         wickDownColor: "#ef4444",
       });
+      // null バーは whitespace エントリ { time } として渡し、昼休みを空白表示
       series.setData(
-        validData.map((d) => ({
-          time: Math.floor(d.t / 1000) as unknown as string,
-          open: d.o!,
-          high: d.h!,
-          low: d.l!,
-          close: d.c!,
-        }))
+        data.map((d) =>
+          d.o !== null && d.h !== null && d.l !== null && d.c !== null
+            ? { time: toTime(d.t), open: d.o, high: d.h, low: d.l, close: d.c }
+            : { time: toTime(d.t) }
+        ) as Parameters<typeof series.setData>[0]
       );
     } else {
       const series = mainChart.addLineSeries({ color: "#6366f1", lineWidth: 2, priceLineVisible: false });
       series.setData(
-        validData.map((d) => ({ time: Math.floor(d.t / 1000) as unknown as string, value: d.c! }))
+        data.map((d) =>
+          d.c !== null
+            ? { time: toTime(d.t), value: d.c }
+            : { time: toTime(d.t) }
+        ) as Parameters<typeof series.setData>[0]
       );
     }
 
