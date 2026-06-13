@@ -7,7 +7,7 @@ from fastapi import APIRouter, HTTPException, Query
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["indicators"])
 
-VALID_TYPES = {"macd", "rsi", "sma", "ema"}
+VALID_TYPES = {"macd", "rsi", "sma", "ema", "bb"}
 
 
 @router.get("/indicators")
@@ -64,6 +64,17 @@ def get_indicators(
         elif type == "ema":
             values = ta.trend.EMAIndicator(close=close, window=period).ema_indicator()
             return _series_response(ticker, type, timestamps, values.tolist())
+
+        elif type == "bb":
+            bb = ta.volatility.BollingerBands(close=close, window=period, window_dev=2)
+            upper  = bb.bollinger_hband().tolist()
+            middle = bb.bollinger_mavg().tolist()
+            lower  = bb.bollinger_lband().tolist()
+            data = [
+                {"t": t, "upper": _sf(upper[i]), "middle": _sf(middle[i]), "lower": _sf(lower[i])}
+                for i, t in enumerate(timestamps)
+            ]
+            return {"ticker": ticker, "type": type, "data": data}
 
     except Exception as e:
         logger.error("indicator calc failed for %s %s: %s", ticker, type, e)

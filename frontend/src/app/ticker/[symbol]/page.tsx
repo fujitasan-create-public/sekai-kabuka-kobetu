@@ -32,24 +32,26 @@ export default function TickerDetail({ params }: { params: Promise<Params> }) {
   const [quote, setQuote] = useState<QuoteResponse | null>(null);
   const [quoteLoading, setQuoteLoading] = useState(true);
 
-  // indicator toggles
+  const [showSMA5, setShowSMA5] = useState(false);
+  const [showSMA25, setShowSMA25] = useState(false);
+  const [showSMA75, setShowSMA75] = useState(false);
+  const [showBB, setShowBB] = useState(false);
   const [showMACD, setShowMACD] = useState(false);
   const [showRSI, setShowRSI] = useState(false);
-  const [showSMA, setShowSMA] = useState(false);
-  const [showEMA, setShowEMA] = useState(false);
+  const [showVolume, setShowVolume] = useState(false);
 
+  const [sma5Data, setSma5Data] = useState<IndicatorResponse | null>(null);
+  const [sma25Data, setSma25Data] = useState<IndicatorResponse | null>(null);
+  const [sma75Data, setSma75Data] = useState<IndicatorResponse | null>(null);
+  const [bbData, setBbData] = useState<IndicatorResponse | null>(null);
   const [macdData, setMacdData] = useState<IndicatorResponse | null>(null);
   const [rsiData, setRsiData] = useState<IndicatorResponse | null>(null);
-  const [smaData, setSmaData] = useState<IndicatorResponse | null>(null);
-  const [emaData, setEmaData] = useState<IndicatorResponse | null>(null);
 
-  // Fetch history when range changes
   useEffect(() => {
     const interval = INTERVALS[range] ?? "1d";
     api.history(ticker, interval, range).then(setHistory).catch(() => setHistory(null));
   }, [ticker, range]);
 
-  // Fetch quote once
   useEffect(() => {
     setQuoteLoading(true);
     api.quote(ticker)
@@ -58,7 +60,30 @@ export default function TickerDetail({ params }: { params: Promise<Params> }) {
       .finally(() => setQuoteLoading(false));
   }, [ticker]);
 
-  // Fetch indicators when toggled
+  useEffect(() => {
+    if (!showSMA5) { setSma5Data(null); return; }
+    const interval = INTERVALS[range] ?? "1d";
+    api.indicators(ticker, "sma", { interval, range, period: 5 }).then(setSma5Data).catch(() => setSma5Data(null));
+  }, [showSMA5, ticker, range]);
+
+  useEffect(() => {
+    if (!showSMA25) { setSma25Data(null); return; }
+    const interval = INTERVALS[range] ?? "1d";
+    api.indicators(ticker, "sma", { interval, range, period: 25 }).then(setSma25Data).catch(() => setSma25Data(null));
+  }, [showSMA25, ticker, range]);
+
+  useEffect(() => {
+    if (!showSMA75) { setSma75Data(null); return; }
+    const interval = INTERVALS[range] ?? "1d";
+    api.indicators(ticker, "sma", { interval, range, period: 75 }).then(setSma75Data).catch(() => setSma75Data(null));
+  }, [showSMA75, ticker, range]);
+
+  useEffect(() => {
+    if (!showBB) { setBbData(null); return; }
+    const interval = INTERVALS[range] ?? "1d";
+    api.indicators(ticker, "bb", { interval, range, period: 20 }).then(setBbData).catch(() => setBbData(null));
+  }, [showBB, ticker, range]);
+
   useEffect(() => {
     if (!showMACD) { setMacdData(null); return; }
     const interval = INTERVALS[range] ?? "1d";
@@ -71,23 +96,20 @@ export default function TickerDetail({ params }: { params: Promise<Params> }) {
     api.indicators(ticker, "rsi", { interval, range }).then(setRsiData).catch(() => setRsiData(null));
   }, [showRSI, ticker, range]);
 
-  useEffect(() => {
-    if (!showSMA) { setSmaData(null); return; }
-    const interval = INTERVALS[range] ?? "1d";
-    api.indicators(ticker, "sma", { interval, range, period: 25 }).then(setSmaData).catch(() => setSmaData(null));
-  }, [showSMA, ticker, range]);
-
-  useEffect(() => {
-    if (!showEMA) { setEmaData(null); return; }
-    const interval = INTERVALS[range] ?? "1d";
-    api.indicators(ticker, "ema", { interval, range, period: 25 }).then(setEmaData).catch(() => setEmaData(null));
-  }, [showEMA, ticker, range]);
-
   const name = quote?.longName ?? quote?.shortName ?? ticker;
+
+  const indicatorButtons = [
+    { label: "SMA 5",   active: showSMA5,   toggle: () => setShowSMA5((v) => !v) },
+    { label: "SMA 25",  active: showSMA25,  toggle: () => setShowSMA25((v) => !v) },
+    { label: "SMA 75",  active: showSMA75,  toggle: () => setShowSMA75((v) => !v) },
+    { label: "BB(20)",  active: showBB,     toggle: () => setShowBB((v) => !v) },
+    { label: "MACD",    active: showMACD,   toggle: () => setShowMACD((v) => !v) },
+    { label: "RSI(14)", active: showRSI,    toggle: () => setShowRSI((v) => !v) },
+    { label: "出来高",   active: showVolume, toggle: () => setShowVolume((v) => !v) },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      {/* Header */}
       <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
           <Link
@@ -110,9 +132,7 @@ export default function TickerDetail({ params }: { params: Promise<Params> }) {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-4 space-y-4">
-        {/* Controls */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* Range selector */}
           <div className="flex gap-1 flex-wrap">
             {RANGES.map((r) => (
               <button
@@ -128,7 +148,6 @@ export default function TickerDetail({ params }: { params: Promise<Params> }) {
               </button>
             ))}
           </div>
-          {/* Chart type */}
           <div className="flex gap-1 ml-auto">
             {(["candle", "line"] as const).map((t) => (
               <button
@@ -146,14 +165,8 @@ export default function TickerDetail({ params }: { params: Promise<Params> }) {
           </div>
         </div>
 
-        {/* Indicator toggles */}
         <div className="flex flex-wrap gap-2">
-          {[
-            { label: "MACD", active: showMACD, toggle: () => setShowMACD((v) => !v) },
-            { label: "RSI(14)", active: showRSI, toggle: () => setShowRSI((v) => !v) },
-            { label: "SMA(25)", active: showSMA, toggle: () => setShowSMA((v) => !v) },
-            { label: "EMA(25)", active: showEMA, toggle: () => setShowEMA((v) => !v) },
-          ].map(({ label, active, toggle }) => (
+          {indicatorButtons.map(({ label, active, toggle }) => (
             <button
               key={label}
               onClick={toggle}
@@ -168,17 +181,19 @@ export default function TickerDetail({ params }: { params: Promise<Params> }) {
           ))}
         </div>
 
-        {/* Chart */}
         <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-3 overflow-hidden">
           {history && history.data.length > 0 ? (
             <FullChart
               data={history.data}
               chartType={chartType}
               dark={dark}
+              sma5Data={sma5Data?.data}
+              sma25Data={sma25Data?.data}
+              sma75Data={sma75Data?.data}
+              bbData={bbData?.data}
               macdData={macdData?.data}
               rsiData={rsiData?.data}
-              smaData={smaData?.data}
-              emaData={emaData?.data}
+              showVolume={showVolume}
             />
           ) : (
             <div className="h-96 flex items-center justify-center text-gray-400">
@@ -187,13 +202,11 @@ export default function TickerDetail({ params }: { params: Promise<Params> }) {
           )}
         </div>
 
-        {/* Fundamentals */}
         <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
           <h2 className="text-sm font-semibold dark:text-white mb-3">ファンダメンタル情報</h2>
           <FundamentalsPanel quote={quote} loading={quoteLoading} />
         </div>
 
-        {/* Disclaimer */}
         <p className="text-xs text-gray-400 dark:text-gray-600">
           ※ 表示データは yfinance 経由の参考値（数十秒〜数分遅延あり）です。投資判断の根拠としないでください。
         </p>
