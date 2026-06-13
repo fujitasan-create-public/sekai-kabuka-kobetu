@@ -31,6 +31,7 @@ export default function MiniChart({ data, positive, dark: _dark }: Props) {
       timeScale: { visible: false },
       handleScroll: false,
       handleScale: false,
+      watermark: { visible: false },
     });
 
     const series = chart.addLineSeries({

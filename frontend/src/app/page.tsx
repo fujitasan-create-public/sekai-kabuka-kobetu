@@ -38,7 +38,7 @@ export default function Dashboard() {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
-          <h1 className="text-lg font-bold dark:text-white flex-1">📈 世界の株価 個別</h1>
+          <h1 className="text-lg font-bold dark:text-white flex-1"> 世界の株価 個別</h1>
           <button
             onClick={() => setShowSearch(true)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"

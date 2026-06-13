@@ -32,6 +32,7 @@ export default function FullChart({ data, chartType, dark, macdData, rsiData, sm
       grid: { vertLines: { color: gridColor }, horzLines: { color: gridColor } },
       timeScale: { borderColor },
       rightPriceScale: { borderColor },
+      watermark: { visible: false },
     };
 
     const mainChart = createChart(mainRef.current, {
