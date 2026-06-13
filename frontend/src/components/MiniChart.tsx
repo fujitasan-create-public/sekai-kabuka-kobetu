@@ -9,26 +9,39 @@ type Props = {
   dark: boolean;
 };
 
-export default function MiniChart({ data, positive, dark: _dark }: Props) {
+export default function MiniChart({ data, positive, dark }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!containerRef.current || data.length === 0) return;
 
-    const color = positive ? "#22c55e" : "#ef4444";
+    const upColor = "#22c55e";
+    const downColor = "#ef4444";
+    const color = positive ? upColor : downColor;
+    const scaleText = dark ? "#6b7280" : "#9ca3af";
+    const gridColor = dark ? "#374151" : "#e5e7eb";
 
     const chart = createChart(containerRef.current, {
       width: containerRef.current.clientWidth,
-      height: 60,
+      height: 160,
       layout: {
         background: { type: ColorType.Solid, color: "transparent" },
-        textColor: "transparent",
+        textColor: scaleText,
+        fontSize: 10,
       },
-      grid: { vertLines: { visible: false }, horzLines: { visible: false } },
+      grid: {
+        vertLines: { visible: false },
+        horzLines: { color: gridColor, style: LineStyle.Dotted },
+      },
       crosshair: { horzLine: { visible: false }, vertLine: { visible: false } },
-      rightPriceScale: { visible: false },
+      rightPriceScale: {
+        visible: true,
+        borderVisible: false,
+        scaleMargins: { top: 0.1, bottom: 0.1 },
+        ticksVisible: false,
+      },
       leftPriceScale: { visible: false },
-      timeScale: { visible: false },
+      timeScale: { visible: false, borderVisible: false },
       handleScroll: false,
       handleScale: false,
       watermark: { visible: false },
@@ -39,7 +52,8 @@ export default function MiniChart({ data, positive, dark: _dark }: Props) {
       lineWidth: 2,
       lineStyle: LineStyle.Solid,
       priceLineVisible: false,
-      lastValueVisible: false,
+      lastValueVisible: true,
+      lastPriceAnimation: 0,
     });
 
     series.setData(
@@ -58,7 +72,7 @@ export default function MiniChart({ data, positive, dark: _dark }: Props) {
       ro.disconnect();
       chart.remove();
     };
-  }, [data, positive]);
+  }, [data, positive, dark]);
 
-  return <div ref={containerRef} className="w-full h-[60px]" />;
+  return <div ref={containerRef} className="w-full h-[160px]" />;
 }

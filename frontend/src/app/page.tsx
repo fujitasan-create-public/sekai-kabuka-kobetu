@@ -34,20 +34,23 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-950">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
-          <h1 className="text-lg font-bold dark:text-white flex-1"> 世界の株価 個別</h1>
+        <div className="w-full px-3 py-2 flex items-center gap-3">
+          <h1 className="text-sm font-bold dark:text-white flex-1">世界の株価 個別</h1>
+          <p className="text-[10px] text-gray-400 dark:text-gray-600 hidden sm:block">
+            ※ 参考値につき投資判断の根拠としないでください。一部のグロース株は表示されない場合があります。
+          </p>
           <button
             onClick={() => setShowSearch(true)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors whitespace-nowrap"
           >
             🔍 銘柄を追加
           </button>
           <button
             onClick={toggle}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
             title={dark ? "ライトモード" : "ダークモード"}
           >
             {dark ? "☀️" : "🌙"}
@@ -55,15 +58,8 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Disclaimer */}
-      <div className="max-w-7xl mx-auto px-4 py-1.5">
-        <p className="text-xs text-gray-400 dark:text-gray-600">
-          ※ 表示データは yfinance 経由の参考値（数十秒遅延あり）です。投資判断の根拠としないでください。
-        </p>
-      </div>
-
-      {/* Grid */}
-      <main className="max-w-7xl mx-auto px-4 py-4">
+      {/* Grid — full width, no max-width */}
+      <main className="w-full p-1">
         {tickers.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-32 gap-4 text-gray-400">
             <span className="text-4xl">📊</span>
@@ -72,7 +68,7 @@ export default function Dashboard() {
         ) : (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={tickers.map((t) => t.ticker)} strategy={rectSortingStrategy}>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1">
                 {tickers.map((entry) => (
                   <TickerTile
                     key={entry.ticker}
