@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { api, TickerSummary } from "@/lib/api";
 import type { TickerEntry } from "@/hooks/useLayout";
 
@@ -50,7 +51,7 @@ export default function SearchModal({ onAdd, onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-          <span className="text-gray-400">🔍</span>
+          <Image src="/search.png" alt="検索" width={16} height={16} className="opacity-40" />
           <input
             ref={inputRef}
             className="flex-1 bg-transparent outline-none dark:text-white placeholder-gray-400"

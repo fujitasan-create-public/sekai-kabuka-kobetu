@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import {
   DndContext,
   closestCenter,
@@ -46,7 +47,7 @@ export default function Dashboard() {
             onClick={() => setShowSearch(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors whitespace-nowrap"
           >
-            🔍 銘柄を追加
+            <Image src="/search.png" alt="検索" width={16} height={16} /> 銘柄を追加
           </button>
           <button
             onClick={toggle}
