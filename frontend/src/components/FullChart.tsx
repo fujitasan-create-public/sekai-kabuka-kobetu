@@ -95,12 +95,44 @@ export default function FullChart({
         ) as Parameters<typeof series.setData>[0]
       );
     } else {
-      const series = mainChart.addLineSeries({ color: "#6366f1", lineWidth: 2, priceLineVisible: false });
-      series.setData(
-        data.map((d) =>
-          d.c !== null ? { time: toTime(d.t), value: d.c } : { time: toTime(d.t) }
-        ) as Parameters<typeof series.setData>[0]
-      );
+      // lightweight-charts の line シリーズは whitespace（値なし点）を飛び越えて
+      // 線を直結してしまうため、null 行を境に連続区間ごとへ分割し、区間ごとに
+      // 別々の line シリーズを描くことで昼休み等のギャップを表現する。
+      type LinePoint = { time: ReturnType<typeof toTime>; value: number };
+      const segments: LinePoint[][] = [];
+      let current: LinePoint[] = [];
+      const gapPoints: { time: ReturnType<typeof toTime> }[] = [];
+
+      for (const d of data) {
+        const hasValue = d.o !== null && d.h !== null && d.l !== null && d.c !== null;
+        if (hasValue) {
+          current.push({ time: toTime(d.t), value: d.c! });
+        } else {
+          // 欠損行（昼休み等）。区間を区切りつつ、時間軸スロットは確保しておく。
+          if (current.length > 0) {
+            segments.push(current);
+            current = [];
+          }
+          gapPoints.push({ time: toTime(d.t) });
+        }
+      }
+      if (current.length > 0) segments.push(current);
+
+      // 欠損時間帯を whitespace として時間軸へ供給（candle と同じ空白幅を保つ）。
+      if (gapPoints.length > 0) {
+        const spacer = mainChart.addLineSeries({ lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+        spacer.setData(gapPoints as Parameters<typeof spacer.setData>[0]);
+      }
+
+      segments.forEach((seg, idx) => {
+        const series = mainChart.addLineSeries({
+          color: "#6366f1",
+          lineWidth: 2,
+          priceLineVisible: false,
+          lastValueVisible: idx === segments.length - 1,
+        });
+        series.setData(seg as Parameters<typeof series.setData>[0]);
+      });
     }
 
     // ── 出来高 ────────────────────────────────────────────────
