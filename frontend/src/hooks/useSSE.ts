@@ -14,11 +14,16 @@ export type TickerSnapshot = {
 
 export function useSSE(tickers: string[]) {
   const [data, setData] = useState<Record<string, TickerSnapshot>>({});
+  const [loading, setLoading] = useState(tickers.length > 0);
   const esRef = useRef<EventSource | null>(null);
   const tickersKey = tickers.slice().sort().join(",");
 
   useEffect(() => {
-    if (tickers.length === 0) return;
+    if (tickers.length === 0) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     if (esRef.current) {
       esRef.current.close();
     }
@@ -37,6 +42,7 @@ export function useSSE(tickers: string[]) {
           }
           return next;
         });
+        setLoading(false);
       } catch {
         // ignore malformed
       }
@@ -44,7 +50,7 @@ export function useSSE(tickers: string[]) {
 
     es.onerror = () => {
       es.close();
-      // retry after 10s
+      setLoading(false);
       setTimeout(() => {
         if (esRef.current === es) {
           esRef.current = null;
@@ -59,5 +65,5 @@ export function useSSE(tickers: string[]) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tickersKey]);
 
-  return data;
+  return { data, loading };
 }

@@ -22,7 +22,7 @@ export default function Dashboard() {
   const { dark, toggle } = useDarkMode();
   const [showSearch, setShowSearch] = useState(false);
 
-  const sseData = useSSE(tickers.map((t) => t.ticker));
+  const { data: sseData, loading: sseLoading } = useSSE(tickers.map((t) => t.ticker));
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -65,6 +65,11 @@ export default function Dashboard() {
           <div className="flex flex-col items-center justify-center py-32 gap-4 text-gray-400">
             <span className="text-4xl">📊</span>
             <p>銘柄がありません。「銘柄を追加」から検索してください。</p>
+          </div>
+        ) : sseLoading ? (
+          <div className="flex flex-col items-center justify-center py-32 gap-4 text-gray-400 dark:text-gray-500">
+            <div className="animate-spin rounded-full h-10 w-10 border-4 border-indigo-500 border-t-transparent" />
+            <p className="text-sm">データを読み込み中...(時間がかかる場合があります。少々お待ちください)</p>
           </div>
         ) : (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>

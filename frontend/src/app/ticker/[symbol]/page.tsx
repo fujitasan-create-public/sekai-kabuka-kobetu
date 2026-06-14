@@ -164,7 +164,7 @@ export default function TickerDetail({ params }: { params: Promise<Params> }) {
                     : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
                 }`}
               >
-                {t === "candle" ? "🕯 ローソク" : "📈 ライン"}
+                {t === "candle" ? "ローソク足" : "線"}
               </button>
             ))}
           </div>
