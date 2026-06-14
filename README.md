@@ -1,6 +1,12 @@
 # 世界の株価 個別
 
 世界の株式銘柄をリアルタイムで監視できるダッシュボードアプリです。銘柄を自由に追加・削除・並べ替えでき、ミニチャートや詳細チャート、テクニカル指標、ファンダメンタルズ情報を確認できます。
+<img width="1912" height="1072" alt="image" src="https://github.com/user-attachments/assets/5f2454d8-2e38-4e6f-babd-a2ffab4f4434" />
+<img width="1173" height="867" alt="image" src="https://github.com/user-attachments/assets/7c8c3b7f-2c0c-4f82-9b69-24489f2fe572" />
+<img width="1142" height="175" alt="image" src="https://github.com/user-attachments/assets/e8a2cbd2-9879-49b1-adf3-5c7c249894b2" />
+
+
+
 
 ## 機能
 
