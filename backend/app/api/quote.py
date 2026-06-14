@@ -38,7 +38,10 @@ def get_quote(ticker: str = Query(...)) -> dict:
     result: dict = {"ticker": ticker}
     for field in _FIELDS:
         val = info.get(field)
-        result[field] = _safe(val)
+        if field == "dividendYield":
+            result[field] = _safe_yield(val)
+        else:
+            result[field] = _safe(val)
     return result
 
 
@@ -48,3 +51,12 @@ def _safe(v):  # type: ignore[return]
     if isinstance(v, float) and v != v:  # NaN
         return None
     return v
+
+
+def _safe_yield(v):  # type: ignore[return]
+    # yfinance returns dividendYield as a percentage (e.g. 3.5 → 3.5%)
+    # Normalize to decimal (0.035) so the frontend's ×100 display works correctly.
+    # Also treat 0 as no dividend.
+    if v is None or (isinstance(v, float) and v != v) or v == 0:
+        return None
+    return v / 100
